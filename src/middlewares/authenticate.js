@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const {AppError} = require('./errorHandler');
+const { AppError } = require('./errorHandler');
 
 const authenticate = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -38,4 +38,4 @@ const authenticate = (req, res, next) => {
     }
 };
 
-module.exports = authenticate;
+module.exports = { authenticate };
