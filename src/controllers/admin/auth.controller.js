@@ -15,7 +15,8 @@ const login = asyncHandler(async (req, res) => {
             email: true,
             fullName: true,
             role: true,
-            passwordHash: true
+            passwordHash: true,
+            updatedAt: true,
         }
     });
 
@@ -40,6 +41,7 @@ const login = asyncHandler(async (req, res) => {
             id: admin.id,
             email: admin.email,
             role: admin.role,
+            pwdChangedAt: admin.updatedAt ? admin.updatedAt.toISOString() : new Date().toISOString(),
         },
         config.jwt.secret,
         { expiresIn: config.jwt.expiresIn }
