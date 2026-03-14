@@ -20,7 +20,8 @@ const vietqrWebhook = asyncHandler(async (req, res) => {
 
     const result = await paymentService.handleVietQRWebhook(
         headers.authorization,
-        body
+        body,
+        req.ip
     );
 
     res.status(200).json(result);
