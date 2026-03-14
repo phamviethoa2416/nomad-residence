@@ -93,6 +93,11 @@ const updateRoom = asyncHandler(async (req, res) => {
     if (data.status !== undefined) updateData.status = data.status;
     if (data.sort_order !== undefined) updateData.sortOrder = data.sort_order;
 
+    const existingRoom = await roomService.getRoomById(params.id);
+    if (!existingRoom) {
+        throw new AppError('Phòng không tồn tại', 404, 'ROOM_NOT_FOUND');
+    }
+
     const room = await roomService.updateRoom(params.id, updateData);
     res.json({
         success: true,
@@ -103,7 +108,7 @@ const updateRoom = asyncHandler(async (req, res) => {
 const deleteRoom = asyncHandler(async (req, res) => {
     const params = AdminRoomParamsSchema.parse(req.params);
     const room = await roomService.getRoomById(params.id);
-    if(!room) throw AppError(
+    if (!room) throw AppError(
         'Phòng không tồn tại',
         404,
         'ROOM_NOT_FOUND'

@@ -12,7 +12,7 @@ const UpdateSettingsBodySchema = z.object({
 
 }).refine(data => {
     if (data.settings && data.settings.length > 0) return true;
-    return !!(data.key && data.value !== undefined);
+    return (typeof data.key === 'string' && data.value !== undefined);
 }, {
     message: 'Thiếu cấu hình thiết lập đơn lẻ hoặc mảng settings',
     path: ['settings']
