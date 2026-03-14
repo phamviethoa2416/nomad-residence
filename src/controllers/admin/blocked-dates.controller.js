@@ -1,6 +1,6 @@
 const prisma = require('../../config/database');
 const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
-const { BlockedDateParamsSchema, ListBlockedDatesQuerySchema, BlockDatesBodySchema, RoomParamsSchema} = require('../../validators/admin/blockedDate.validators');
+const { BlockedDateParamsSchema, ListBlockedDatesQuerySchema, BlockDatesBodySchema, RoomParamsSchema} = require('../../validators/admin/blocked-dates.validators');
 
 const listBlockedDates = asyncHandler(async (req, res) => {
     const params = RoomParamsSchema.parse(req.params);
