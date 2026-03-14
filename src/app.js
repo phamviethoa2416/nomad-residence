@@ -3,12 +3,14 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 
 const {errorHandler} = require('./middlewares/errorHandler');
 const {authenticate} = require('./middlewares/authenticate');
 const requestId = require('./middlewares/requestId');
 const { logger } = require('./utils/logger');
 const authorize = require('./middlewares/authorize');
+const prisma = require('./config/database');
 const config = require('./config');
 
 // ─── Public routes ───────────────────────────────────────────────────────────
@@ -31,6 +33,7 @@ const app = express();
 
 app.use(requestId);
 app.use(helmet());
+app.use(compression());
 app.use(
     cors({
         origin: config.app.frontendUrl,
@@ -82,16 +85,36 @@ const bookingLimiter = rateLimit({
 });
 
 // ─── Body Parser ─────────────────────────────────────────────────────────────
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({extended: true, limit: '1mb'}));
 
 // ─── Health check ────────────────────────────────────────────────────────────
-app.get('/health', (req, res) => {
-    res.json({
-        success: true,
-        status: 'ok',
+app.get('/health', async (req, res) => {
+    const start = Date.now();
+    let dbOk = false;
+    let dbLatencyMs = null;
+
+    try {
+        const dbStart = Date.now();
+        await prisma.$queryRaw`SELECT 1`;
+        dbOk = true;
+        dbLatencyMs = Date.now() - dbStart;
+    } catch (err) {
+        dbOk = false;
+    }
+
+    const overallStatus = dbOk ? 'ok' : 'degraded';
+
+    res.status(dbOk ? 200 : 503).json({
+        success: dbOk,
+        status: overallStatus,
         env: config.app.env,
         timestamp: new Date().toISOString(),
+        db: {
+            status: dbOk ? 'up' : 'down',
+            latencyMs: dbLatencyMs,
+        },
+        latencyMs: Date.now() - start,
     });
 });
 
