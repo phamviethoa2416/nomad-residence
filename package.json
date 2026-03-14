@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -25,6 +27,7 @@
     "jsonwebtoken": "^9.0.3",
     "kafkajs": "^2.2.4",
     "morgan": "^1.10.1",
+    "compression": "^1.7.4",
     "node-cron": "^4.2.1",
     "node-ical": "^0.25.6",
     "nodemailer": "^8.0.2",
