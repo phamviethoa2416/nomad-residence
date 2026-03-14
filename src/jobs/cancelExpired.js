@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const prisma = require('../config/database');
+const { logger } = require('../utils/logger');
 
 const cancelExpiredBookings = async () => {
     try {
@@ -16,10 +17,10 @@ const cancelExpiredBookings = async () => {
         });
 
         if (result.count > 0) {
-            console.log(`[CronJob] Đã hủy ${result.count} đơn hết hạn`);
+            logger.info('[CronJob] Đã hủy đơn hết hạn', { count: result.count });
         }
     } catch (err) {
-        console.error('[CronJob] cancelExpiredBookings error:', err.message);
+        logger.error('[CronJob] cancelExpiredBookings error', { err: err.message });
     }
 };
 
@@ -28,7 +29,7 @@ const startCancelExpiredJob = () => {
         name: 'cancel-expired-bookings',
     });
 
-    console.log('[CronJob] cancelExpiredBookings started (every 1 min)');
+    logger.info('[CronJob] cancelExpiredBookings scheduled', { cronExpr: '* * * * *' });
 };
 
 module.exports = {startCancelExpiredJob, cancelExpiredBookings};

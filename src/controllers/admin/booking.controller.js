@@ -1,6 +1,7 @@
 const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
 const bookingService = require('../../services/booking.service');
 const { sendBookingCancellationEmail, notifyAdminBookingConfirmed } = require('../../services/notification.service');
+const { withRequest } = require('../../utils/logger');
 const { BookingParamsSchema, ListBookingsQuerySchema, ConfirmBookingBodySchema, CancelBookingBodySchema, CreateManualBookingBodySchema } = require('../../validators/admin/booking.validators');
 
 const listBookings = asyncHandler(async (req, res) => {
@@ -43,7 +44,16 @@ const confirmBooking = asyncHandler(async (req, res) => {
 
     const booking = await bookingService.confirmBooking(params.id, data.admin_note);
 
-    notifyAdminBookingConfirmed(booking).catch(console.error);
+    const log = withRequest(req);
+    log.info('booking_confirm_request', {
+        bookingId: booking.id,
+        bookingCode: booking.bookingCode,
+        adminId: req.admin?.id,
+    });
+
+    notifyAdminBookingConfirmed(booking).catch((err) => {
+        log.error('notifyAdminBookingConfirmed failed', { err, bookingId: booking.id });
+    });
 
     res.json({
         success: true,
@@ -58,7 +68,17 @@ const cancelBooking = asyncHandler(async (req, res) => {
 
     const booking = await bookingService.cancelBooking(params.id, data.reason, true);
 
-    sendBookingCancellationEmail(booking).catch(console.error);
+    const log = withRequest(req);
+    log.info('booking_cancel_request', {
+        bookingId: booking.id,
+        bookingCode: booking.bookingCode,
+        adminId: req.admin?.id,
+        reason: data.reason,
+    });
+
+    sendBookingCancellationEmail(booking).catch((err) => {
+        log.error('sendBookingCancellationEmail failed', { err, bookingId: booking.id });
+    });
 
     res.json({
         success: true,

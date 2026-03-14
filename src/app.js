@@ -6,6 +6,8 @@ const rateLimit = require('express-rate-limit');
 
 const {errorHandler} = require('./middlewares/errorHandler');
 const {authenticate} = require('./middlewares/authenticate');
+const requestId = require('./middlewares/requestId');
+const { logger } = require('./utils/logger');
 const authorize = require('./middlewares/authorize');
 const config = require('./config');
 
@@ -27,6 +29,7 @@ const settingAdminRoutes = require('./routes/admin/setting.routes');
 
 const app = express();
 
+app.use(requestId);
 app.use(helmet());
 app.use(
     cors({
@@ -36,7 +39,24 @@ app.use(
 );
 
 if (config.app.env !== 'test') {
-    app.use(morgan(config.app.env === 'production' ? 'combined' : 'dev'));
+    if (config.app.env === 'production') {
+        const morganJson = require('morgan');
+        app.use(
+            morganJson((tokens, req, res) => {
+                logger.info('http_request', {
+                    method: tokens.method(req, res),
+                    url: tokens.url(req, res),
+                    status: Number(tokens.status(req, res)),
+                    contentLength: tokens.res(req, res, 'content-length'),
+                    responseTimeMs: Number(tokens['response-time'](req, res)),
+                    requestId: req.requestId,
+                });
+                return null;
+            })
+        );
+    } else {
+        app.use(morgan(config.app.env === 'production' ? 'combined' : 'dev'));
+    }
 }
 
 const generalLimiter = rateLimit({

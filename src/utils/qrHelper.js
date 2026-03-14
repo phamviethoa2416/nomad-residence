@@ -1,5 +1,6 @@
 require('crypto');
 const config = require('../config');
+const { logger } = require('./logger');
 
 const buildTransferCode = (bookingCode) => {
     return bookingCode.replace(/-/g, '');
@@ -29,12 +30,14 @@ const generateVietQR = async ({bookingCode, amount}) => {
     });
 
     if (!response.ok) {
+        logger.error('VietQR API error', { status: response.status });
         throw new Error(`VietQR API error: ${response.status}`);
     }
 
     const data = await response.json();
 
     if (data.code !== '00') {
+        logger.error('VietQR generate failed', { code: data.code, desc: data.desc });
         throw new Error(`VietQR generate failed: ${data.desc}`);
     }
 
@@ -56,8 +59,8 @@ const verifyWebhookToken = (authHeader) => {
     const secretKey = config.vietqr.webhookSecret;
 
     if (!secretKey) {
-        console.warn('[VietQR] webhookSecret chưa được cấu hình, bỏ qua verify');
-        return true;
+        logger.error('[VietQR] webhookSecret chưa được cấu hình, từ chối webhook');
+        return false;
     }
 
     try {

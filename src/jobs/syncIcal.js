@@ -1,16 +1,17 @@
 const cron = require('node-cron');
 const { syncAllIcalLinks } = require('../services/ical.service');
 const config = require('../config');
+const { logger } = require('../utils/logger');
 
 const runIcalSync = async () => {
-    console.log('[CronJob] iCal sync started...');
+    logger.info('[CronJob] iCal sync started...');
     try {
         const results = await syncAllIcalLinks();
         const success = results.filter((r) => r.success).length;
         const failed = results.filter((r) => !r.success).length;
-        console.log(`[CronJob] iCal sync done — success: ${success}, failed: ${failed}`);
+        logger.info('[CronJob] iCal sync done', { success, failed });
     } catch (err) {
-        console.error('[CronJob] syncIcal error:', err.message);
+        logger.error('[CronJob] syncIcal error', { err: err.message });
     }
 };
 
@@ -30,7 +31,7 @@ const startIcalSyncJob = () => {
         name: 'ical-sync',
     });
 
-    console.log(`[CronJob] iCal sync started (every ${interval} min — cron: ${cronExpr})`);
+    logger.info('[CronJob] iCal sync scheduled', { intervalMinutes: interval, cronExpr });
 };
 
 module.exports = { startIcalSyncJob, runIcalSync };
