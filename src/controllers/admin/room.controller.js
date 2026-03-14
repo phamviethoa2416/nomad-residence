@@ -108,11 +108,14 @@ const updateRoom = asyncHandler(async (req, res) => {
 const deleteRoom = asyncHandler(async (req, res) => {
     const params = AdminRoomParamsSchema.parse(req.params);
     const room = await roomService.getRoomById(params.id);
-    if (!room) throw AppError(
+    if (!room) throw new AppError(
         'Phòng không tồn tại',
         404,
         'ROOM_NOT_FOUND'
-    )
+    );
+
+    await roomService.deleteRoom(params.id);
+
     res.json({
         success: true,
         message: 'Xóa phòng thành công'
