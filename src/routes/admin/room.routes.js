@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../../controllers/admin/room.controller');
 const pricingController = require('../../controllers/admin/pricing.controller');
-const blockedController = require('../../controllers/admin/blockedDate.controller');
+const blockedController = require('../../controllers/admin/blocked-dates.controller');
 const icalController = require('../../controllers/admin/ical.controller');
 
 // Room CRUD
