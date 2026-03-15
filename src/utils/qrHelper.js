@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const config = require('../config');
 const { logger } = require('./logger');
 
@@ -43,7 +44,7 @@ const generateVietQR = async ({bookingCode, amount}) => {
     return {
         qrDataURL: data.data.qrDataURL,
         qrCode: data.data.qrCode,
-        transferCode,
+        transferContent: transferCode,
         accountNo: config.vietqr.accountNo,
         accountName: data.data.accountName || config.vietqr.accountName,
         bankName: config.vietqr.bankName,
@@ -63,9 +64,10 @@ const verifyWebhookToken = (authHeader) => {
     }
 
     try {
-        const jwt = require('jsonwebtoken');
-        jwt.verify(token, secretKey);
-        return true;
+        const tokenBuf = Buffer.from(token, 'utf-8');
+        const secretBuf = Buffer.from(secretKey, 'utf-8');
+        if (tokenBuf.length !== secretBuf.length) return false;
+        return crypto.timingSafeEqual(tokenBuf, secretBuf);
     } catch {
         return false;
     }
