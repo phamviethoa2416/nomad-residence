@@ -4,6 +4,7 @@ const prisma = require('../../config/database')
 const config = require('../../config');
 const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
 const { LoginSchema, ChangePasswordSchema } = require('../../validators/admin/auth.validators');
+const { withRequest } = require('../../utils/logger');
 
 const login = asyncHandler(async (req, res) => {
     const data = LoginSchema.parse(req.body || {});
@@ -46,6 +47,13 @@ const login = asyncHandler(async (req, res) => {
         config.jwt.secret,
         { expiresIn: config.jwt.expiresIn }
     );
+
+    const log = withRequest(req);
+    log.info('audit_admin_login', {
+        action: 'login',
+        adminId: admin.id,
+        email: admin.email,
+    });
 
     res.json({
         success: true,
@@ -103,6 +111,12 @@ const changePassword = asyncHandler(async (req, res) => {
     await prisma.admin.update({
         where: { id: req.admin.id },
         data: { passwordHash: hashedPassword },
+    });
+
+    const log = withRequest(req);
+    log.info('audit_password_change', {
+        action: 'password_change',
+        adminId: req.admin.id,
     });
 
     res.json({ success: true, message: 'Đổi mật khẩu thành công' });

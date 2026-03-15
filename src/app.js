@@ -32,7 +32,25 @@ const settingAdminRoutes = require('./routes/admin/setting.routes');
 const app = express();
 
 app.use(requestId);
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+            connectSrc: ["'self'"],
+            frameSrc: ["'none'"],
+            objectSrc: ["'none'"],
+        },
+    },
+    crossOriginEmbedderPolicy: true,
+    crossOriginOpenerPolicy: true,
+    crossOriginResourcePolicy: { policy: 'same-site' },
+    frameguard: { action: 'deny' },
+    noSniff: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+}));
 app.use(compression());
 app.use(
     cors({
@@ -84,6 +102,18 @@ const bookingLimiter = rateLimit({
     },
 });
 
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Quá nhiều lần đăng nhập thất bại, vui lòng thử lại sau 15 phút',
+        code: 'LOGIN_RATE_LIMITED',
+    },
+});
+
 // ─── Body Parser ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({extended: true, limit: '1mb'}));
@@ -124,7 +154,7 @@ app.use('/api/v1/bookings', bookingLimiter, bookingPublicRoutes);
 app.use('/api/v1/payments', paymentPublicRoutes);
 app.use('/api/v1/ical', icalPublicRoutes);
 
-app.use('/api/v1/admin', authAdminRoutes);
+app.use('/api/v1/admin', loginLimiter, authAdminRoutes);
 app.use('/api/v1/admin/rooms', authenticate, authorize('admin'), roomAdminRoutes);
 app.use('/api/v1/admin/bookings', authenticate, authorize('admin'), bookingAdminRoutes);
 app.use('/api/v1/admin/pricing', authenticate, authorize('admin'), pricingAdminRoutes);
