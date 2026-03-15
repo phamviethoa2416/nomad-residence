@@ -1,0 +1,17 @@
+{
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-console": "warn",
+    "consistent-return": "warn",
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "no-var": "error",
+    "prefer-const": "warn"
+  }
+}
