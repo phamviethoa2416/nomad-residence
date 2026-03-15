@@ -1,6 +1,35 @@
 const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
 const roomService = require('../../services/room.service');
+const { pickAndMap } = require('../../utils/objectHelper');
 const { AdminRoomParamsSchema, AdminImageParamsSchema, CreateRoomBodySchema, UpdateRoomBodySchema, AddRoomImageBodySchema, ReorderRoomImagesBodySchema, UpdateAmenitiesBodySchema } = require('../../validators/admin/room.validators');
+
+const UPDATE_ROOM_KEY_MAP = {
+    name: 'name',
+    slug: 'slug',
+    room_type: 'roomType',
+    description: 'description',
+    short_description: 'shortDescription',
+    max_guests: 'maxGuests',
+    num_bedrooms: 'numBedrooms',
+    num_bathrooms: 'numBathrooms',
+    num_beds: 'numBeds',
+    area: 'area',
+    address: 'address',
+    district: 'district',
+    city: 'city',
+    latitude: 'latitude',
+    longitude: 'longitude',
+    base_price: 'basePrice',
+    cleaning_fee: 'cleaningFee',
+    checkin_time: 'checkinTime',
+    checkout_time: 'checkoutTime',
+    min_nights: 'minNights',
+    max_nights: 'maxNights',
+    house_rules: 'houseRules',
+    cancellation_policy: 'cancellationPolicy',
+    status: 'status',
+    sort_order: 'sortOrder',
+};
 
 const listRooms = asyncHandler(async (req, res) => {
     const rooms = await roomService.getAllRooms();
@@ -66,32 +95,7 @@ const updateRoom = asyncHandler(async (req, res) => {
     const params = AdminRoomParamsSchema.parse(req.params);
     const data = UpdateRoomBodySchema.parse(req.body || {});
 
-    const updateData = {};
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.slug !== undefined) updateData.slug = data.slug;
-    if (data.room_type !== undefined) updateData.roomType = data.room_type;
-    if (data.description !== undefined) updateData.description = data.description;
-    if (data.short_description !== undefined) updateData.shortDescription = data.short_description;
-    if (data.max_guests !== undefined) updateData.maxGuests = data.max_guests;
-    if (data.num_bedrooms !== undefined) updateData.numBedrooms = data.num_bedrooms;
-    if (data.num_bathrooms !== undefined) updateData.numBathrooms = data.num_bathrooms;
-    if (data.num_beds !== undefined) updateData.numBeds = data.num_beds;
-    if (data.area !== undefined) updateData.area = data.area;
-    if (data.address !== undefined) updateData.address = data.address;
-    if (data.district !== undefined) updateData.district = data.district;
-    if (data.city !== undefined) updateData.city = data.city;
-    if (data.latitude !== undefined) updateData.latitude = data.latitude;
-    if (data.longitude !== undefined) updateData.longitude = data.longitude;
-    if (data.base_price !== undefined) updateData.basePrice = data.base_price;
-    if (data.cleaning_fee !== undefined) updateData.cleaningFee = data.cleaning_fee;
-    if (data.checkin_time !== undefined) updateData.checkinTime = data.checkin_time;
-    if (data.checkout_time !== undefined) updateData.checkoutTime = data.checkout_time;
-    if (data.min_nights !== undefined) updateData.minNights = data.min_nights;
-    if (data.max_nights !== undefined) updateData.maxNights = data.max_nights;
-    if (data.house_rules !== undefined) updateData.houseRules = data.house_rules;
-    if (data.cancellation_policy !== undefined) updateData.cancellationPolicy = data.cancellation_policy;
-    if (data.status !== undefined) updateData.status = data.status;
-    if (data.sort_order !== undefined) updateData.sortOrder = data.sort_order;
+    const updateData = pickAndMap(data, UPDATE_ROOM_KEY_MAP);
 
     const existingRoom = await roomService.getRoomById(params.id);
     if (!existingRoom) {
