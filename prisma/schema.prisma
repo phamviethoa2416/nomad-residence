@@ -35,7 +35,7 @@ model Room {
   status             String   @default("active") @db.VarChar(20)
   sortOrder          Int      @default(0) @map("sort_order")
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamp
-  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamp
 
   bookings     Booking[]
   blockedDates BlockedDate[]
@@ -75,7 +75,7 @@ model Booking {
   cancelReason   String?   @map("cancel_reason") @db.VarChar(255)
   expiresAt      DateTime? @map("expires_at") @db.Timestamp
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamp
-  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamp
 
   room     Room      @relation(fields: [roomId], references: [id])
   payments Payment[]
@@ -120,7 +120,7 @@ model Payment {
   rawResponse         Json?     @map("raw_response") @db.JsonB
   adminNote           String?   @map("admin_note") @db.Text
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamp
-  updatedAt           DateTime  @default(now()) @map("updated_at") @db.Timestamp
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamp
 
   booking Booking @relation(fields: [bookingId], references: [id])
 
@@ -152,7 +152,7 @@ model Admin {
   phone        String?  @db.VarChar(20)
   role         String   @default("admin") @db.VarChar(20)
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp
-  updatedAt    DateTime @default(now()) @map("updated_at") @db.Timestamp
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamp
 
   @@map("admins")
 }
@@ -170,7 +170,7 @@ model PricingRule {
   priority      Int       @default(0)
   isActive      Boolean   @default(true) @map("is_active")
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamp
-  updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamp
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamp
 
   room Room @relation(fields: [roomId], references: [id])
 
@@ -183,7 +183,7 @@ model Setting {
   key         String   @id @db.VarChar(100)
   value       Json     @db.JsonB
   description String?  @db.VarChar(255)
-  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamp
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamp
 
   @@map("settings")
 }
@@ -212,7 +212,7 @@ model IcalLink {
   syncError    String?   @map("sync_error") @db.Text
   isActive     Boolean   @default(true) @map("is_active")
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamp
-  updatedAt    DateTime  @default(now()) @map("updated_at") @db.Timestamp
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamp
 
   room Room @relation(fields: [roomId], references: [id])
 
