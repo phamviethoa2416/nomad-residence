@@ -84,6 +84,7 @@ const createRoom = asyncHandler(async (req, res) => {
         status: data.status,
         sortOrder: data.sort_order,
     });
+    await roomService.invalidateRoomCache();
 
     res.status(201).json({
         success: true,
@@ -103,6 +104,7 @@ const updateRoom = asyncHandler(async (req, res) => {
     }
 
     const room = await roomService.updateRoom(params.id, updateData);
+    await roomService.invalidateRoomCache();
     res.json({
         success: true,
         data: room
@@ -119,6 +121,7 @@ const deleteRoom = asyncHandler(async (req, res) => {
     );
 
     await roomService.deleteRoom(params.id);
+    await roomService.invalidateRoomCache();
 
     res.json({
         success: true,

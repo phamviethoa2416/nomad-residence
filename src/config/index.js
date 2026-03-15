@@ -55,6 +55,11 @@ const config = {
         syncIntervalMinutes: parseInt(process.env.ICAL_SYNC_INTERVAL_MINUTES) || 30,
         tokenSecret: requiredEnv('ICAL_TOKEN_SECRET'),
     },
+
+    redis: {
+        url: process.env.REDIS_URL || null,
+        defaultTtlSeconds: parseInt(process.env.CACHE_TTL_SECONDS) || 60,
+    },
 };
 
 module.exports = config;
