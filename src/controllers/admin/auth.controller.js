@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const prisma = require('../../config/database')
+const prisma = require('../../config/database');
 const config = require('../../config');
 const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
 const { LoginSchema, ChangePasswordSchema } = require('../../validators/admin/auth.validators');
@@ -18,23 +18,16 @@ const login = asyncHandler(async (req, res) => {
             role: true,
             passwordHash: true,
             updatedAt: true,
-        }
+        },
     });
 
     if (!admin) {
-        throw new AppError(
-            'Email hoặc mật khẩu không đúng',
-            401,
-            'INVALID_CREDENTIALS'
-        );
+        throw new AppError('Email hoặc mật khẩu không đúng', 401, 'INVALID_CREDENTIALS');
     }
 
     const isMatch = await bcrypt.compare(data.password, admin.passwordHash);
     if (!isMatch) {
-        throw new AppError(
-            'Email hoặc mật khẩu không đúng',
-            401,
-            'INVALID_CREDENTIALS');
+        throw new AppError('Email hoặc mật khẩu không đúng', 401, 'INVALID_CREDENTIALS');
     }
 
     const token = jwt.sign(
@@ -45,7 +38,7 @@ const login = asyncHandler(async (req, res) => {
             pwdChangedAt: admin.updatedAt ? admin.updatedAt.toISOString() : new Date().toISOString(),
         },
         config.jwt.secret,
-        { expiresIn: config.jwt.expiresIn }
+        { expiresIn: config.jwt.expiresIn },
     );
 
     const log = withRequest(req);
@@ -75,11 +68,7 @@ const getMe = asyncHandler(async (req, res) => {
         select: { id: true, email: true, fullName: true, phone: true, role: true, createdAt: true },
     });
 
-    if (!admin) throw new AppError(
-        'Không tìm thấy tài khoản',
-        404,
-        'NOT_FOUND'
-    );
+    if (!admin) throw new AppError('Không tìm thấy tài khoản', 404, 'NOT_FOUND');
 
     res.json({ success: true, data: admin });
 });
@@ -90,20 +79,12 @@ const changePassword = asyncHandler(async (req, res) => {
     const admin = await prisma.admin.findUnique({ where: { id: req.admin.id } });
 
     if (!admin) {
-        throw new AppError(
-            'Không tìm thấy tài khoản',
-            404,
-            'ADMIN_NOT_FOUND'
-        );
+        throw new AppError('Không tìm thấy tài khoản', 404, 'ADMIN_NOT_FOUND');
     }
 
     const isMatch = await bcrypt.compare(data.current_password, admin.passwordHash);
     if (!isMatch) {
-        throw new AppError(
-            'Mật khẩu hiện tại không đúng',
-            400,
-            'INVALID_PASSWORD'
-        );
+        throw new AppError('Mật khẩu hiện tại không đúng', 400, 'INVALID_PASSWORD');
     }
 
     const hashedPassword = await bcrypt.hash(data.new_password, 12);

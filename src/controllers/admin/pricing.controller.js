@@ -1,7 +1,12 @@
 const { asyncHandler } = require('../../middlewares/errorHandler');
 const pricingService = require('../../services/pricing.service');
 const { pickAndMap } = require('../../utils/objectHelper');
-const { PricingRoomParamsSchema, PricingRuleParamsSchema, CreatePricingRuleBodySchema, UpdatePricingRuleBodySchema } = require('../../validators/admin/pricing.validators');
+const {
+    PricingRoomParamsSchema,
+    PricingRuleParamsSchema,
+    CreatePricingRuleBodySchema,
+    UpdatePricingRuleBodySchema,
+} = require('../../validators/admin/pricing.validators');
 
 const PRICING_RULE_KEY_MAP = {
     name: 'name',
@@ -20,7 +25,7 @@ const listRules = asyncHandler(async (req, res) => {
     const rules = await pricingService.getRoomPricingRules(params.id);
     res.json({
         success: true,
-        data: rules
+        data: rules,
     });
 });
 
@@ -42,7 +47,7 @@ const createRule = asyncHandler(async (req, res) => {
 
     res.status(201).json({
         success: true,
-        data: rule
+        data: rule,
     });
 });
 
@@ -54,7 +59,7 @@ const updateRule = asyncHandler(async (req, res) => {
     const rule = await pricingService.updatePricingRule(params.ruleId, updateData);
     res.json({
         success: true,
-        data: rule
+        data: rule,
     });
 });
 
@@ -63,7 +68,7 @@ const deleteRule = asyncHandler(async (req, res) => {
     await pricingService.deletePricingRule(params.ruleId);
     res.json({
         success: true,
-        message: 'Đã xóa rule giá'
+        message: 'Đã xóa rule giá',
     });
 });
 
@@ -71,5 +76,5 @@ module.exports = {
     listRules,
     createRule,
     updateRule,
-    deleteRule
+    deleteRule,
 };

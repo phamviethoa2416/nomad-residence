@@ -5,8 +5,8 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 
-const {errorHandler} = require('./middlewares/errorHandler');
-const {authenticate} = require('./middlewares/authenticate');
+const { errorHandler } = require('./middlewares/errorHandler');
+const { authenticate } = require('./middlewares/authenticate');
 const requestId = require('./middlewares/requestId');
 const { logger } = require('./utils/logger');
 const authorize = require('./middlewares/authorize');
@@ -32,31 +32,33 @@ const settingAdminRoutes = require('./routes/admin/setting.routes');
 const app = express();
 
 app.use(requestId);
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", 'data:', 'https:'],
-            connectSrc: ["'self'"],
-            frameSrc: ["'none'"],
-            objectSrc: ["'none'"],
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", 'data:', 'https:'],
+                connectSrc: ["'self'"],
+                frameSrc: ["'none'"],
+                objectSrc: ["'none'"],
+            },
         },
-    },
-    crossOriginEmbedderPolicy: true,
-    crossOriginOpenerPolicy: true,
-    crossOriginResourcePolicy: { policy: 'same-site' },
-    frameguard: { action: 'deny' },
-    noSniff: true,
-    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-}));
+        crossOriginEmbedderPolicy: true,
+        crossOriginOpenerPolicy: true,
+        crossOriginResourcePolicy: { policy: 'same-site' },
+        frameguard: { action: 'deny' },
+        noSniff: true,
+        referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    }),
+);
 app.use(compression());
 app.use(
     cors({
         origin: config.app.frontendUrl,
         credentials: true,
-    })
+    }),
 );
 
 if (config.app.env !== 'test') {
@@ -73,7 +75,7 @@ if (config.app.env !== 'test') {
                     requestId: req.requestId,
                 });
                 return null;
-            })
+            }),
         );
     } else {
         app.use(morgan(config.app.env === 'production' ? 'combined' : 'dev'));
@@ -88,7 +90,7 @@ const generalLimiter = rateLimit({
     message: {
         success: false,
         message: 'Quá nhiều yêu cầu, thử lại sau',
-        code: 'RATE_LIMITED'
+        code: 'RATE_LIMITED',
     },
 });
 
@@ -98,7 +100,7 @@ const bookingLimiter = rateLimit({
     message: {
         success: false,
         message: 'Quá nhiều yêu cầu đặt phòng',
-        code: 'RATE_LIMITED'
+        code: 'RATE_LIMITED',
     },
 });
 
@@ -116,7 +118,7 @@ const loginLimiter = rateLimit({
 
 // ─── Body Parser ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({extended: true, limit: '1mb'}));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // ─── Health check ────────────────────────────────────────────────────────────
 app.get('/health', async (req, res) => {

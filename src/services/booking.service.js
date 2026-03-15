@@ -11,7 +11,12 @@ const assertRoomAvailable = async (tx, roomId, checkin, checkout, excludeBooking
         roomId,
         OR: [
             { status: 'confirmed', checkinDate: { lt: checkout }, checkoutDate: { gt: checkin } },
-            { status: 'pending', expiresAt: { gt: new Date() }, checkinDate: { lt: checkout }, checkoutDate: { gt: checkin } },
+            {
+                status: 'pending',
+                expiresAt: { gt: new Date() },
+                checkinDate: { lt: checkout },
+                checkoutDate: { gt: checkin },
+            },
         ],
     };
     if (excludeBookingId != null) {
@@ -55,8 +60,8 @@ const createBooking = async ({
 
         // Validate room
         const room = await tx.room.findUnique({
-            where: {id: roomId},
-            select: {id: true, name: true, status: true, maxGuests: true, minNights: true, maxNights: true},
+            where: { id: roomId },
+            select: { id: true, name: true, status: true, maxGuests: true, minNights: true, maxNights: true },
         });
 
         if (!room || room.status !== 'active') {
@@ -69,8 +74,10 @@ const createBooking = async ({
 
         // Calculate num_nights
         const numNights = Math.round((checkout - checkin) / (1000 * 60 * 60 * 24));
-        if (numNights < room.minNights) throw new AppError(`Đặt tối thiểu ${room.minNights} đêm`, 400, 'MIN_NIGHTS_REQUIRED');
-        if (room.maxNights && numNights > room.maxNights) throw new AppError(`Đặt tối đa ${room.maxNights} đêm`, 400, 'MAX_NIGHTS_EXCEEDED');
+        if (numNights < room.minNights)
+            throw new AppError(`Đặt tối thiểu ${room.minNights} đêm`, 400, 'MIN_NIGHTS_REQUIRED');
+        if (room.maxNights && numNights > room.maxNights)
+            throw new AppError(`Đặt tối đa ${room.maxNights} đêm`, 400, 'MAX_NIGHTS_EXCEEDED');
 
         await assertRoomAvailable(tx, roomId, checkin, checkout);
 
@@ -102,7 +109,7 @@ const createBooking = async ({
                 expiresAt,
             },
             include: {
-                room: {select: {name: true, checkinTime: true, checkoutTime: true}},
+                room: { select: { name: true, checkinTime: true, checkoutTime: true } },
             },
         });
 
@@ -144,7 +151,7 @@ const createManualBooking = async ({
         // Lock room row
         await tx.$executeRaw`SELECT id FROM "rooms" WHERE id = ${roomId} FOR UPDATE`;
 
-        const room = await tx.room.findUnique({where: {id: roomId}});
+        const room = await tx.room.findUnique({ where: { id: roomId } });
         if (!room) throw new AppError('Phòng không tồn tại', 404, 'ROOM_NOT_FOUND');
 
         await assertRoomAvailable(tx, roomId, checkin, checkout);
@@ -204,8 +211,8 @@ const createManualBooking = async ({
 const confirmBooking = async (bookingId, adminNote) => {
     return await prisma.$transaction(async (tx) => {
         const booking = await tx.booking.findUnique({
-            where: {id: bookingId},
-            include: {room: {select: {name: true}}},
+            where: { id: bookingId },
+            include: { room: { select: { name: true } } },
         });
 
         if (!booking) throw new AppError('Không tìm thấy đơn', 404, 'BOOKING_NOT_FOUND');
@@ -219,20 +226,20 @@ const confirmBooking = async (bookingId, adminNote) => {
         await assertRoomAvailable(tx, booking.roomId, booking.checkinDate, booking.checkoutDate, bookingId);
 
         const b = await tx.booking.update({
-            where: {id: bookingId},
+            where: { id: bookingId },
             data: {
                 status: 'confirmed',
                 confirmedAt: new Date(),
                 adminNote,
             },
             include: {
-                room: {select: {name: true, checkinTime: true, checkoutTime: true}},
+                room: { select: { name: true, checkinTime: true, checkoutTime: true } },
             },
         });
 
         await tx.payment.updateMany({
-            where: {bookingId, status: 'pending'},
-            data: {status: 'success', paidAt: new Date(), adminNote},
+            where: { bookingId, status: 'pending' },
+            data: { status: 'success', paidAt: new Date(), adminNote },
         });
 
         await blockDatesForBooking(tx, b.roomId, b.checkinDate, b.checkoutDate, b.id);
@@ -258,19 +265,19 @@ const cancelBooking = async (bookingId, reason, isAdmin = false) => {
 
     return await prisma.$transaction(async (tx) => {
         const b = await tx.booking.update({
-            where: {id: bookingId},
+            where: { id: bookingId },
             data: {
                 status: 'canceled',
                 canceledAt: new Date(),
                 cancelReason: reason || 'Đã hủy',
             },
-            include: {room: true},
+            include: { room: true },
         });
 
         // Remove blocked dates if it was confirmed
         if (booking.status === 'confirmed') {
             await tx.blockedDate.deleteMany({
-                where: {roomId: booking.roomId, source: 'booking', sourceRef: String(bookingId)},
+                where: { roomId: booking.roomId, source: 'booking', sourceRef: String(bookingId) },
             });
         }
 
@@ -328,12 +335,13 @@ const getBookings = async ({ status, roomId, dateFrom, dateTo, page = 1, limit =
     const where = {
         ...(status && { status }),
         ...(roomId && { roomId }),
-        ...(dateFrom && dateTo && {
-            checkinDate: {
-                gte: new Date(dateFrom),
-                lte: new Date(dateTo),
-            },
-        }),
+        ...(dateFrom &&
+            dateTo && {
+                checkinDate: {
+                    gte: new Date(dateFrom),
+                    lte: new Date(dateTo),
+                },
+            }),
     };
 
     const [bookings, total] = await Promise.all([

@@ -9,18 +9,18 @@ const serializeError = (err) => {
         return {
             message: err.message,
             stack: err.stack,
-            code: err.code
+            code: err.code,
         };
     }
     if (typeof err === 'object' && err.message) {
         return {
             message: err.message,
             stack: err.stack,
-            code: err.code
+            code: err.code,
         };
     }
     return {
-        message: String(err)
+        message: String(err),
     };
 };
 
@@ -37,13 +37,13 @@ logTransports.push(
         format: isProduction
             ? format.json()
             : format.combine(
-                format.colorize(),
-                format.printf(({ level, message, timestamp, ...meta }) => {
-                    const rest = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-                    return `[${timestamp}] ${level}: ${message}${rest}`;
-                })
-            ),
-    })
+                  format.colorize(),
+                  format.printf(({ level, message, timestamp, ...meta }) => {
+                      const rest = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+                      return `[${timestamp}] ${level}: ${message}${rest}`;
+                  }),
+              ),
+    }),
 );
 
 if (isProduction) {
@@ -56,11 +56,9 @@ if (isProduction) {
                 maxSize: '20m',
                 maxFiles: '14d',
                 zippedArchive: true,
-            })
+            }),
         );
-    } catch {
-
-    }
+    } catch {}
 }
 
 const logger = createLogger({
@@ -70,7 +68,7 @@ const logger = createLogger({
         format.errors({ stack: true }),
         format.splat(),
         errorSerializer(),
-        format.json()
+        format.json(),
     ),
     defaultMeta: { service: 'nomad-residence-api' },
     transports: logTransports,

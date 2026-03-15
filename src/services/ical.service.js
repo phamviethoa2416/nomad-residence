@@ -79,7 +79,6 @@ const syncIcalLink = async (linkId) => {
             });
         }
 
-
         await prisma.blockedDate.deleteMany({
             where: {
                 roomId: link.roomId,
@@ -94,7 +93,10 @@ const syncIcalLink = async (linkId) => {
             });
         }
 
-        const conflictDates = await checkConflicts(link.roomId, newDates.map((d) => d.date));
+        const conflictDates = await checkConflicts(
+            link.roomId,
+            newDates.map((d) => d.date),
+        );
         if (conflictDates.length > 0) {
             const dateStrs = conflictDates.map(formatDate);
             await notifyIcalConflict(link.room, dateStrs);
@@ -216,5 +218,5 @@ module.exports = {
     addIcalLink,
     deleteIcalLink,
     getExportUrl,
-    verifyIcalToken
+    verifyIcalToken,
 };

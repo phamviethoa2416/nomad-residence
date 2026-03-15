@@ -55,7 +55,11 @@ const getRooms = async ({ checkin, checkout, guests, roomType, minPrice, maxPric
 
     let priceMap = new Map();
     if (checkin && checkout && rooms.length > 0) {
-        priceMap = await calculatePricesForRooms(rooms.map((r) => r.id), checkin, checkout);
+        priceMap = await calculatePricesForRooms(
+            rooms.map((r) => r.id),
+            checkin,
+            checkout,
+        );
     }
 
     const roomsWithPrice = rooms.map((room) => {
@@ -236,12 +240,7 @@ const getUnavailableRoomIds = async (checkin, checkout) => {
         distinct: ['roomId'],
     });
 
-    return [
-        ...new Set([
-            ...blockedRooms.map((r) => r.roomId),
-            ...bookedRooms.map((r) => r.roomId),
-        ]),
-    ];
+    return [...new Set([...blockedRooms.map((r) => r.roomId), ...bookedRooms.map((r) => r.roomId)])];
 };
 
 const checkRoomAvailability = async (roomId, checkinDate, checkoutDate) => {
@@ -302,9 +301,7 @@ const deleteRoomImage = async (imageId) => {
 
 const reorderRoomImages = async (roomId, orderedIds) => {
     await prisma.$transaction(
-        orderedIds.map(({ id, sortOrder }) =>
-            prisma.roomImage.update({ where: { id }, data: { sortOrder } })
-        )
+        orderedIds.map(({ id, sortOrder }) => prisma.roomImage.update({ where: { id }, data: { sortOrder } })),
     );
 };
 

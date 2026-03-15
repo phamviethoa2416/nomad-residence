@@ -59,9 +59,7 @@ const set = async (key, value, ttlSeconds) => {
                 await redis.set(key, serialized);
             }
             return;
-        } catch {
-
-        }
+        } catch {}
     }
     memoryStore.set(key, {
         value: typeof value === 'string' ? value : JSON.parse(serialized),
@@ -94,9 +92,7 @@ const invalidateByPrefix = async (prefix) => {
                 stream.on('error', reject);
             });
             return;
-        } catch {
-
-        }
+        } catch {}
     }
     for (const key of [...memoryStore.keys()]) {
         if (key.startsWith(prefix)) memoryStore.delete(key);

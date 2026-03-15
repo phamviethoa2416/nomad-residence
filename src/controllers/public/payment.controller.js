@@ -1,6 +1,10 @@
-const { asyncHandler} = require('../../middlewares/errorHandler');
+const { asyncHandler } = require('../../middlewares/errorHandler');
 const paymentService = require('../../services/payment.service');
-const { BookingQuerySchema, WebhookHeadersSchema, WebhookBodySchema } = require('../../validators/public/payment.validators');
+const {
+    BookingQuerySchema,
+    WebhookHeadersSchema,
+    WebhookBodySchema,
+} = require('../../validators/public/payment.validators');
 
 const getQRPayment = asyncHandler(async (req, res) => {
     const data = BookingQuerySchema.parse(req.query || {});
@@ -9,7 +13,7 @@ const getQRPayment = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        data: paymentInfo
+        data: paymentInfo,
     });
 });
 
@@ -18,12 +22,7 @@ const vietqrWebhook = asyncHandler(async (req, res) => {
 
     const body = WebhookBodySchema.parse(req.body || {});
 
-    const result = await paymentService.handleVietQRWebhook(
-        headers.authorization,
-        body,
-        req.ip,
-        req
-    );
+    const result = await paymentService.handleVietQRWebhook(headers.authorization, body, req.ip, req);
 
     res.status(200).json(result);
 });
@@ -35,12 +34,12 @@ const checkStatus = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        data: status
+        data: status,
     });
 });
 
 module.exports = {
     getQRPayment,
     vietqrWebhook,
-    checkStatus
+    checkStatus,
 };

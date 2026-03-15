@@ -6,7 +6,6 @@ const generateBookingCode = async () => {
     const maxAttempts = 6;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-
         const today = dayjs().format('YYYYMMDD');
         const prefix = `BK-${today}-`;
 

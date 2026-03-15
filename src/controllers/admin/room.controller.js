@@ -1,7 +1,15 @@
 const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
 const roomService = require('../../services/room.service');
 const { pickAndMap } = require('../../utils/objectHelper');
-const { AdminRoomParamsSchema, AdminImageParamsSchema, CreateRoomBodySchema, UpdateRoomBodySchema, AddRoomImageBodySchema, ReorderRoomImagesBodySchema, UpdateAmenitiesBodySchema } = require('../../validators/admin/room.validators');
+const {
+    AdminRoomParamsSchema,
+    AdminImageParamsSchema,
+    CreateRoomBodySchema,
+    UpdateRoomBodySchema,
+    AddRoomImageBodySchema,
+    ReorderRoomImagesBodySchema,
+    UpdateAmenitiesBodySchema,
+} = require('../../validators/admin/room.validators');
 
 const ROOM_KEY_MAP = {
     name: 'name',
@@ -35,7 +43,7 @@ const listRooms = asyncHandler(async (req, res) => {
     const rooms = await roomService.getAllRooms();
     res.json({
         success: true,
-        data: rooms
+        data: rooms,
     });
 });
 
@@ -43,16 +51,12 @@ const getRoom = asyncHandler(async (req, res) => {
     const params = AdminRoomParamsSchema.parse(req.params);
     const room = await roomService.getRoomById(params.id);
 
-    if (!room) throw new AppError(
-        'Không tìm thấy phòng',
-        404,
-        'ROOM_NOT_FOUND'
-    );
+    if (!room) throw new AppError('Không tìm thấy phòng', 404, 'ROOM_NOT_FOUND');
     res.json({
         success: true,
-        data: room
+        data: room,
     });
-})
+});
 
 const createRoom = asyncHandler(async (req, res) => {
     const data = CreateRoomBodySchema.parse(req.body || {});
@@ -62,7 +66,7 @@ const createRoom = asyncHandler(async (req, res) => {
 
     res.status(201).json({
         success: true,
-        data: room
+        data: room,
     });
 });
 
@@ -81,25 +85,21 @@ const updateRoom = asyncHandler(async (req, res) => {
     await roomService.invalidateRoomCache();
     res.json({
         success: true,
-        data: room
+        data: room,
     });
 });
 
 const deleteRoom = asyncHandler(async (req, res) => {
     const params = AdminRoomParamsSchema.parse(req.params);
     const room = await roomService.getRoomById(params.id);
-    if (!room) throw new AppError(
-        'Phòng không tồn tại',
-        404,
-        'ROOM_NOT_FOUND'
-    );
+    if (!room) throw new AppError('Phòng không tồn tại', 404, 'ROOM_NOT_FOUND');
 
     await roomService.deleteRoom(params.id);
     await roomService.invalidateRoomCache();
 
     res.json({
         success: true,
-        message: 'Xóa phòng thành công'
+        message: 'Xóa phòng thành công',
     });
 });
 
@@ -116,7 +116,7 @@ const addImage = asyncHandler(async (req, res) => {
 
     res.status(201).json({
         success: true,
-        data: image
+        data: image,
     });
 });
 
@@ -132,12 +132,12 @@ const reorderImages = asyncHandler(async (req, res) => {
 
     await roomService.reorderRoomImages(
         params.id,
-        data.order.map((o) => ({ id: o.id, sortOrder: o.sort_order }))
+        data.order.map((o) => ({ id: o.id, sortOrder: o.sort_order })),
     );
 
     res.json({
         success: true,
-        message: 'Đã sắp xếp lại ảnh'
+        message: 'Đã sắp xếp lại ảnh',
     });
 });
 
@@ -148,7 +148,7 @@ const updateAmenities = asyncHandler(async (req, res) => {
     await roomService.upsertAmenities(params.id, data.amenities);
     res.json({
         success: true,
-        message: 'Đã cập nhật tiện ích'
+        message: 'Đã cập nhật tiện ích',
     });
 });
 
@@ -162,4 +162,4 @@ module.exports = {
     deleteImage,
     reorderImages,
     updateAmenities,
-}
+};

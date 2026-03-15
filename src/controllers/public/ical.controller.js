@@ -13,11 +13,7 @@ const exportIcal = asyncHandler(async (req, res) => {
     const icsContent = await icalService.generateIcal(params.room_id);
 
     if (!icsContent) {
-        throw new AppError(
-            'Không thể tạo iCal cho phòng này',
-            500,
-            'ICAL_GENERATION_FAILED'
-        );
+        throw new AppError('Không thể tạo iCal cho phòng này', 500, 'ICAL_GENERATION_FAILED');
     }
 
     res.status(200);

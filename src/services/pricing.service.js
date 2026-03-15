@@ -1,7 +1,6 @@
 const prisma = require('../config/database');
 const { getDateRange, getDayOfWeek, formatDate } = require('../utils/dateHelper');
 
-
 const calcNightPrice = (basePrice, date, rules) => {
     const dow = getDayOfWeek(date);
     const dateStr = formatDate(date);
@@ -67,7 +66,6 @@ const calculatePrice = async (roomId, checkinDate, checkoutDate) => {
     return computePriceFromRoomAndRules(room, rules, checkinDate, checkoutDate);
 };
 
-
 const calculatePricesForRooms = async (roomIds, checkinDate, checkoutDate) => {
     if (!roomIds.length) return new Map();
 
@@ -120,7 +118,6 @@ const computePriceFromRoomAndRules = (room, rules, checkinDate, checkoutDate) =>
         total: baseTotal + cleaningFee,
     };
 };
-
 
 const getRoomPricingRules = async (roomId) => {
     return prisma.pricingRule.findMany({

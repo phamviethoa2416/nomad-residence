@@ -4,10 +4,10 @@ const { logger } = require('./logger');
 
 const buildTransferCode = (bookingCode) => {
     return bookingCode.replace(/-/g, '');
-}
+};
 
-const generateVietQR = async ({bookingCode, amount}) => {
-    const transferCode  = buildTransferCode(bookingCode);
+const generateVietQR = async ({ bookingCode, amount }) => {
+    const transferCode = buildTransferCode(bookingCode);
 
     const body = {
         accountNo: config.vietqr.accountNo,
@@ -19,7 +19,7 @@ const generateVietQR = async ({bookingCode, amount}) => {
         template: 'compact2',
     };
 
-    const response = await fetch ('https://api.vietqr.io/v2/generate', {
+    const response = await fetch('https://api.vietqr.io/v2/generate', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -95,4 +95,4 @@ module.exports = {
     generateVietQR,
     verifyWebhookToken,
     extractBookingCode,
-}
+};

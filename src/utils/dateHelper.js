@@ -18,11 +18,11 @@ const getDateRange = (checkin, checkout) => {
     }
 
     return dates;
-}
+};
 
 const calculateNights = (checkin, checkout) => {
     return dayjs(checkout).diff(dayjs(checkin), 'day');
-}
+};
 
 const formatDate = (date) => dayjs(date).format('YYYY-MM-DD');
 
@@ -43,4 +43,4 @@ module.exports = {
     addMinutes,
     getDayOfWeek,
     dayjs,
-}
+};

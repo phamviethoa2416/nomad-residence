@@ -94,7 +94,12 @@ const handleVietQRWebhook = async (authHeader, body, remoteIp, reqContext) => {
 
     if (!bookingCode) {
         log.info(`[VietQR Webhook] Không nhận ra booking từ nội dung`, { content });
-        return { error: false, errorReason: null, toastMessage: 'Giao dịch không tìm thấy đơn hàng tương ứng', object: { reftransactionid: transactionid } };
+        return {
+            error: false,
+            errorReason: null,
+            toastMessage: 'Giao dịch không tìm thấy đơn hàng tương ứng',
+            object: { reftransactionid: transactionid },
+        };
     }
 
     const booking = await prisma.booking.findUnique({
@@ -104,13 +109,23 @@ const handleVietQRWebhook = async (authHeader, body, remoteIp, reqContext) => {
 
     if (!booking) {
         log.warn('[VietQR Webhook] Booking not found', { bookingCode });
-        return { error: true, errorReason: 'ORDER_NOT_FOUND', toastMessage: `Không tìm thấy đơn ${bookingCode}`, object: null };
+        return {
+            error: true,
+            errorReason: 'ORDER_NOT_FOUND',
+            toastMessage: `Không tìm thấy đơn ${bookingCode}`,
+            object: null,
+        };
     }
 
     // Idempotency check
     const alreadyProcessed = await prisma.payment.findFirst({ where: { bookingId: booking.id, status: 'success' } });
     if (alreadyProcessed) {
-        return { error: false, errorReason: null, toastMessage: 'Đơn hàng đã được xác nhận trước đó', object: { reftransactionid: transactionid } };
+        return {
+            error: false,
+            errorReason: null,
+            toastMessage: 'Đơn hàng đã được xác nhận trước đó',
+            object: { reftransactionid: transactionid },
+        };
     }
 
     // Verify số tiền
@@ -119,14 +134,19 @@ const handleVietQRWebhook = async (authHeader, body, remoteIp, reqContext) => {
 
     if (receivedAmount < expectedAmount) {
         await sendTelegram(
-            `⚠️ <b>THANH TOÁN THIẾU!</b>\n\n📋 Booking: <code>${bookingCode}</code>\n💰 Cần: ${expectedAmount.toLocaleString('vi-VN')}đ\n💸 Nhận: ${receivedAmount.toLocaleString('vi-VN')}đ\n📝 Nội dung: ${content}\n🏦 TK: ${bankaccount}`
+            `⚠️ <b>THANH TOÁN THIẾU!</b>\n\n📋 Booking: <code>${bookingCode}</code>\n💰 Cần: ${expectedAmount.toLocaleString('vi-VN')}đ\n💸 Nhận: ${receivedAmount.toLocaleString('vi-VN')}đ\n📝 Nội dung: ${content}\n🏦 TK: ${bankaccount}`,
         );
         log.warn('[VietQR Webhook] Invalid amount', {
             bookingCode,
             expectedAmount,
             receivedAmount,
         });
-        return { error: true, errorReason: 'INVALID_AMOUNT', toastMessage: `Số tiền không khớp. Cần ${expectedAmount}, nhận ${receivedAmount}`, object: null };
+        return {
+            error: true,
+            errorReason: 'INVALID_AMOUNT',
+            toastMessage: `Số tiền không khớp. Cần ${expectedAmount}, nhận ${receivedAmount}`,
+            object: null,
+        };
     }
 
     // Cập nhật payment record
@@ -135,11 +155,25 @@ const handleVietQRWebhook = async (authHeader, body, remoteIp, reqContext) => {
         if (existing) {
             await tx.payment.update({
                 where: { id: existing.id },
-                data: { status: 'success', vietqrTransactionId: transactionid, paidAt: new Date(), rawResponse: body, adminNote: `VietQR webhook. Nội dung: ${content}` },
+                data: {
+                    status: 'success',
+                    vietqrTransactionId: transactionid,
+                    paidAt: new Date(),
+                    rawResponse: body,
+                    adminNote: `VietQR webhook. Nội dung: ${content}`,
+                },
             });
         } else {
             await tx.payment.create({
-                data: { bookingId: booking.id, amount: receivedAmount, method: 'vietqr', status: 'success', vietqrTransactionId: transactionid, paidAt: new Date(), rawResponse: body },
+                data: {
+                    bookingId: booking.id,
+                    amount: receivedAmount,
+                    method: 'vietqr',
+                    status: 'success',
+                    vietqrTransactionId: transactionid,
+                    paidAt: new Date(),
+                    rawResponse: body,
+                },
             });
         }
     });
@@ -154,7 +188,12 @@ const handleVietQRWebhook = async (authHeader, body, remoteIp, reqContext) => {
     });
 
     log.info('[VietQR Webhook] Xác nhận thành công booking', { bookingCode, transactionid });
-    return { error: false, errorReason: null, toastMessage: 'Xác nhận thanh toán thành công', object: { reftransactionid: transactionid } };
+    return {
+        error: false,
+        errorReason: null,
+        toastMessage: 'Xác nhận thanh toán thành công',
+        object: { reftransactionid: transactionid },
+    };
 };
 
 /**

@@ -1,6 +1,11 @@
 const prisma = require('../../config/database');
 const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
-const { BlockedDateParamsSchema, ListBlockedDatesQuerySchema, BlockDatesBodySchema, RoomParamsSchema} = require('../../validators/admin/blocked-dates.validators');
+const {
+    BlockedDateParamsSchema,
+    ListBlockedDatesQuerySchema,
+    BlockDatesBodySchema,
+    RoomParamsSchema,
+} = require('../../validators/admin/blocked-dates.validators');
 
 const listBlockedDates = asyncHandler(async (req, res) => {
     const params = RoomParamsSchema.parse(req.params);
@@ -21,7 +26,7 @@ const listBlockedDates = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        data: dates
+        data: dates,
     });
 });
 
@@ -42,7 +47,7 @@ const blockDates = asyncHandler(async (req, res) => {
         select: {
             bookingCode: true,
             checkinDate: true,
-            checkoutDate: true
+            checkoutDate: true,
         },
     });
 
@@ -76,29 +81,21 @@ const unblockDate = asyncHandler(async (req, res) => {
     const id = params.id;
 
     const date = await prisma.blockedDate.findUnique({ where: { id } });
-    if (!date) throw new AppError(
-        'Không tìm thấy bản ghi',
-        404,
-        'NOT_FOUND'
-    );
+    if (!date) throw new AppError('Không tìm thấy bản ghi', 404, 'NOT_FOUND');
 
     if (date.source === 'booking') {
-        throw new AppError(
-            'Không thể gỡ block của đơn đặt phòng, hãy hủy đơn thay thế',
-            400,
-            'CANNOT_UNBLOCK_BOOKING'
-        );
+        throw new AppError('Không thể gỡ block của đơn đặt phòng, hãy hủy đơn thay thế', 400, 'CANNOT_UNBLOCK_BOOKING');
     }
 
     await prisma.blockedDate.delete({ where: { id } });
     res.json({
         success: true,
-        message: 'Đã gỡ block ngày'
+        message: 'Đã gỡ block ngày',
     });
 });
 
 module.exports = {
     listBlockedDates,
     blockDates,
-    unblockDate
+    unblockDate,
 };

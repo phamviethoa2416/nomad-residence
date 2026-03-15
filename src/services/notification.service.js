@@ -40,7 +40,6 @@ const sendEmail = async ({ to, subject, html, text }) => {
     }
 };
 
-
 const sendBookingConfirmationEmail = async (booking) => {
     if (!booking.guestEmail) return;
 

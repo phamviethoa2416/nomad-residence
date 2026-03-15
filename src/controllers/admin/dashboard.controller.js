@@ -17,7 +17,7 @@ const getDashboard = asyncHandler(async (req, res) => {
         totalOccupiedResult,
         totalRooms,
         pendingBookings,
-        icalSyncErrors
+        icalSyncErrors,
     ] = await Promise.all([
         prisma.booking.count({
             where: {
@@ -65,10 +65,7 @@ const getDashboard = asyncHandler(async (req, res) => {
     const totalOccupied = Number(totalOccupiedResult?.[0]?.total ?? 0);
     const daysInMonth = dayjs().daysInMonth();
     const totalRoomNights = totalRooms * daysInMonth;
-    const occupancyRate =
-        totalRoomNights > 0
-            ? Math.round((totalOccupied / totalRoomNights) * 1000) / 10
-            : 0;
+    const occupancyRate = totalRoomNights > 0 ? Math.round((totalOccupied / totalRoomNights) * 1000) / 10 : 0;
 
     res.json({
         success: true,
@@ -103,7 +100,7 @@ const getSettings = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        data: result
+        data: result,
     });
 });
 
@@ -118,12 +115,12 @@ const updateSettings = asyncHandler(async (req, res) => {
                     where: { key: k },
                     create: { key: k, value: v },
                     update: { value: v, updatedAt: new Date() },
-                })
-            )
+                }),
+            ),
         );
         return res.json({
             success: true,
-            message: `Đã cập nhật ${data.settings.length} cài đặt`
+            message: `Đã cập nhật ${data.settings.length} cài đặt`,
         });
     }
 
@@ -135,12 +132,12 @@ const updateSettings = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        data: setting
+        data: setting,
     });
 });
 
 module.exports = {
     getDashboard,
     getSettings,
-    updateSettings
+    updateSettings,
 };

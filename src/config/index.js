@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 
 const requiredEnv = (key) => {
     const value = process.env[key];
@@ -30,7 +30,7 @@ const config = {
         webhookSecret: process.env.VIETQR_WEBHOOK_SECRET || null,
         allowedIps: (process.env.VIETQR_WEBHOOK_IPS || '')
             .split(',')
-            .map(ip => ip.trim())
+            .map((ip) => ip.trim())
             .filter(Boolean),
     },
 

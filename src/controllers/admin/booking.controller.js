@@ -2,7 +2,13 @@ const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
 const bookingService = require('../../services/booking.service');
 const { sendBookingCancellationEmail, notifyAdminBookingConfirmed } = require('../../services/notification.service');
 const { withRequest } = require('../../utils/logger');
-const { BookingParamsSchema, ListBookingsQuerySchema, ConfirmBookingBodySchema, CancelBookingBodySchema, CreateManualBookingBodySchema } = require('../../validators/admin/booking.validators');
+const {
+    BookingParamsSchema,
+    ListBookingsQuerySchema,
+    ConfirmBookingBodySchema,
+    CancelBookingBodySchema,
+    CreateManualBookingBodySchema,
+} = require('../../validators/admin/booking.validators');
 
 const listBookings = asyncHandler(async (req, res) => {
     const query = ListBookingsQuerySchema.parse(req.query || {});
@@ -18,7 +24,7 @@ const listBookings = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        data: result
+        data: result,
     });
 });
 
@@ -26,15 +32,11 @@ const getBooking = asyncHandler(async (req, res) => {
     const params = BookingParamsSchema.parse(req.params);
     const booking = await bookingService.getBookingDetail(params.id);
 
-    if (!booking) throw new AppError(
-        'Không tìm thấy đơn',
-        404,
-        'NOT_FOUND'
-    );
+    if (!booking) throw new AppError('Không tìm thấy đơn', 404, 'NOT_FOUND');
 
     res.json({
         success: true,
-        data: booking
+        data: booking,
     });
 });
 
@@ -58,7 +60,7 @@ const confirmBooking = asyncHandler(async (req, res) => {
     res.json({
         success: true,
         data: booking,
-        message: 'Đã xác nhận đơn'
+        message: 'Đã xác nhận đơn',
     });
 });
 
@@ -83,7 +85,7 @@ const cancelBooking = asyncHandler(async (req, res) => {
     res.json({
         success: true,
         data: booking,
-        message: 'Đã hủy đơn'
+        message: 'Đã hủy đơn',
     });
 });
 
@@ -106,7 +108,7 @@ const createManualBooking = asyncHandler(async (req, res) => {
 
     res.status(201).json({
         success: true,
-        data: booking
+        data: booking,
     });
 });
 

@@ -1,15 +1,14 @@
 const z = require('zod');
 
 const AdminRoomParamsSchema = z.object({
-    id: z.coerce.number().int().positive('ID phòng không hợp lệ')
+    id: z.coerce.number().int().positive('ID phòng không hợp lệ'),
 });
 
 const AdminImageParamsSchema = z.object({
-    imageId: z.coerce.number().int().positive('ID ảnh không hợp lệ')
+    imageId: z.coerce.number().int().positive('ID ảnh không hợp lệ'),
 });
 
 const CreateRoomBodySchema = z.object({
-
     name: z.string().min(1, 'Tên phòng là bắt buộc'),
 
     slug: z.string().min(1, 'Slug là bắt buộc'),
@@ -21,7 +20,7 @@ const CreateRoomBodySchema = z.object({
     short_description: z.string().optional(),
 
     max_guests: z.coerce.number().int().positive({
-        message: 'Số khách tối đa phải lớn hơn 0'
+        message: 'Số khách tối đa phải lớn hơn 0',
     }),
 
     num_bedrooms: z.coerce.number().int().nonnegative().optional().default(1),
@@ -43,7 +42,7 @@ const CreateRoomBodySchema = z.object({
     longitude: z.coerce.number().optional().nullable(),
 
     base_price: z.coerce.number().positive({
-        message: 'Giá cơ bản phải lớn hơn 0'
+        message: 'Giá cơ bản phải lớn hơn 0',
     }),
 
     cleaning_fee: z.coerce.number().nonnegative().optional().default(0),
@@ -62,8 +61,7 @@ const CreateRoomBodySchema = z.object({
 
     status: z.string().optional().default('active'),
 
-    sort_order: z.coerce.number().int().optional().default(0)
-
+    sort_order: z.coerce.number().int().optional().default(0),
 });
 
 const UpdateRoomBodySchema = CreateRoomBodySchema.partial();
@@ -72,20 +70,22 @@ const AddRoomImageBodySchema = z.object({
     url: z.url('URL hình ảnh không hợp lệ'),
     alt_text: z.string().optional(),
     is_primary: z.boolean().optional().default(false),
-    sort_order: z.coerce.number().int().optional().default(0)
+    sort_order: z.coerce.number().int().optional().default(0),
 });
 
 const ReorderRoomImagesBodySchema = z.object({
-    order: z.array(
-        z.object({
-            id: z.coerce.number().int().positive(),
-            sort_order: z.coerce.number().int()
-        })
-    ).min(1, 'Danh sách thứ tự không được trống')
+    order: z
+        .array(
+            z.object({
+                id: z.coerce.number().int().positive(),
+                sort_order: z.coerce.number().int(),
+            }),
+        )
+        .min(1, 'Danh sách thứ tự không được trống'),
 });
 
 const UpdateAmenitiesBodySchema = z.object({
-    amenities: z.array(z.string()).default([])
+    amenities: z.array(z.string()).default([]),
 });
 
 module.exports = {
@@ -95,5 +95,5 @@ module.exports = {
     UpdateRoomBodySchema,
     AddRoomImageBodySchema,
     ReorderRoomImagesBodySchema,
-    UpdateAmenitiesBodySchema
+    UpdateAmenitiesBodySchema,
 };

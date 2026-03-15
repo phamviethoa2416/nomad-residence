@@ -20,12 +20,7 @@ const authenticate = async (req, res, next) => {
         const decoded = jwt.verify(token, config.jwt.secret);
 
         if (!decoded || !decoded.id) {
-            return next(
-                new AppError(
-                    "Token không hợp lệ, vui lòng đăng nhập lại",
-                    401,
-                    'INVALID_TOKEN')
-            );
+            return next(new AppError('Token không hợp lệ, vui lòng đăng nhập lại', 401, 'INVALID_TOKEN'));
         }
 
         const admin = await prisma.admin.findUnique({
@@ -34,12 +29,7 @@ const authenticate = async (req, res, next) => {
         });
 
         if (!admin) {
-            return next(
-                new AppError(
-                    "Tài khoản không tồn tại",
-                    401,
-                    'INVALID_TOKEN')
-            );
+            return next(new AppError('Tài khoản không tồn tại', 401, 'INVALID_TOKEN'));
         }
 
         if (decoded.pwdChangedAt && admin.updatedAt) {
@@ -47,11 +37,7 @@ const authenticate = async (req, res, next) => {
             const currentTime = new Date(admin.updatedAt).getTime();
             if (currentTime > tokenTime) {
                 return next(
-                    new AppError(
-                        'Phiên đăng nhập đã bị thu hồi, vui lòng đăng nhập lại',
-                        401,
-                        'TOKEN_REVOKED'
-                    )
+                    new AppError('Phiên đăng nhập đã bị thu hồi, vui lòng đăng nhập lại', 401, 'TOKEN_REVOKED'),
                 );
             }
         }
@@ -66,20 +52,9 @@ const authenticate = async (req, res, next) => {
         next();
     } catch (err) {
         if (err.name === 'TokenExpiredError') {
-            return next(
-                new AppError(
-                    'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
-                    401,
-                    'TOKEN_EXPIRED'
-                )
-            );
+            return next(new AppError('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại', 401, 'TOKEN_EXPIRED'));
         }
-        return next(
-            new AppError(
-                "Token không hợp lệ, vui lòng đăng nhập lại",
-                401,
-                'INVALID_TOKEN')
-        );
+        return next(new AppError('Token không hợp lệ, vui lòng đăng nhập lại', 401, 'INVALID_TOKEN'));
     }
 };
 
