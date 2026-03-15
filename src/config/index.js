@@ -60,6 +60,10 @@ const config = {
         url: process.env.REDIS_URL || null,
         defaultTtlSeconds: parseInt(process.env.CACHE_TTL_SECONDS) || 60,
     },
+
+    log: {
+        level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+    },
 };
 
 module.exports = config;

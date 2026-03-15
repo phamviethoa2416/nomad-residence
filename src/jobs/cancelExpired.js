@@ -1,8 +1,9 @@
+const crypto = require('crypto');
 const cron = require('node-cron');
 const prisma = require('../config/database');
 const { logger } = require('../utils/logger');
 
-const cancelExpiredBookings = async () => {
+const cancelExpiredBookings = async (batchId) => {
     try {
         const result = await prisma.booking.updateMany({
             where: {
@@ -17,14 +18,14 @@ const cancelExpiredBookings = async () => {
         });
 
         if (result.count > 0) {
-            logger.info('[CronJob] Đã hủy đơn hết hạn', { count: result.count });
+            logger.info('[CronJob] Đã hủy đơn hết hạn', { batchId, count: result.count });
         }
     } catch (err) {
-        logger.error('[CronJob] cancelExpiredBookings error', { err: err.message });
+        logger.error('[CronJob] cancelExpiredBookings error', { batchId, err });
     }
 };
 
-const markCompletedBookings = async () => {
+const markCompletedBookings = async (batchId) => {
     try {
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
@@ -38,16 +39,18 @@ const markCompletedBookings = async () => {
         });
 
         if (result.count > 0) {
-            logger.info('[CronJob] Đã chuyển đơn sang completed', { count: result.count });
+            logger.info('[CronJob] Đã chuyển đơn sang completed', { batchId, count: result.count });
         }
     } catch (err) {
-        logger.error('[CronJob] markCompletedBookings error', { err: err.message });
+        logger.error('[CronJob] markCompletedBookings error', { batchId, err });
     }
 };
 
 const runScheduledBookingJobs = async () => {
-    await cancelExpiredBookings();
-    await markCompletedBookings();
+    const batchId = crypto.randomUUID().slice(0, 8);
+    logger.debug('[CronJob] booking batch started', { batchId });
+    await cancelExpiredBookings(batchId);
+    await markCompletedBookings(batchId);
 };
 
 const startCancelExpiredJob = () => {
@@ -55,7 +58,7 @@ const startCancelExpiredJob = () => {
         name: 'cancel-expired-bookings',
     });
 
-    logger.info('[CronJob] cancelExpiredBookings and markCompletedBookings scheduled', { cronExpr: '* * * * *' });
+    logger.info('[CronJob] cancelExpiredBookings + markCompletedBookings scheduled', { cronExpr: '* * * * *' });
 };
 
-module.exports = {startCancelExpiredJob, cancelExpiredBookings};
+module.exports = { startCancelExpiredJob, cancelExpiredBookings };

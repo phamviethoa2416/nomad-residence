@@ -36,7 +36,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
         logger.info('[Email] Sent', { to, messageId: info.messageId });
         return info;
     } catch (err) {
-        logger.error('[Email] Failed to send', { err: err.message });
+        logger.error('[Email] Failed to send', { err });
     }
 };
 
@@ -137,7 +137,7 @@ const sendTelegram = async (message) => {
             logger.error('[Telegram] API error', { err });
         }
     } catch (err) {
-        logger.error('[Telegram] Failed to send', { err: err.message });
+        logger.error('[Telegram] Failed to send', { err });
     }
 };
 

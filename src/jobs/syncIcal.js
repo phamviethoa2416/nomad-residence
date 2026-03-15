@@ -1,17 +1,19 @@
+const crypto = require('crypto');
 const cron = require('node-cron');
 const { syncAllIcalLinks } = require('../services/ical.service');
 const config = require('../config');
 const { logger } = require('../utils/logger');
 
 const runIcalSync = async () => {
-    logger.info('[CronJob] iCal sync started...');
+    const batchId = crypto.randomUUID().slice(0, 8);
+    logger.info('[CronJob] iCal sync started', { batchId });
     try {
         const results = await syncAllIcalLinks();
         const success = results.filter((r) => r.success).length;
         const failed = results.filter((r) => !r.success).length;
-        logger.info('[CronJob] iCal sync done', { success, failed });
+        logger.info('[CronJob] iCal sync done', { batchId, success, failed });
     } catch (err) {
-        logger.error('[CronJob] syncIcal error', { err: err.message });
+        logger.error('[CronJob] syncIcal error', { batchId, err });
     }
 };
 
