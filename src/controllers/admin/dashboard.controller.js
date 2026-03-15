@@ -9,18 +9,26 @@ const getDashboard = asyncHandler(async (req, res) => {
     const monthStart = dayjs().startOf('month').toDate();
     const monthEnd = dayjs().endOf('month').toDate();
 
-    // Today's check-ins and check-outs
-    const [todayCheckins, todayCheckouts, activeBookings] = await Promise.all([
+    const [
+        todayCheckins,
+        todayCheckouts,
+        activeBookings,
+        monthAgg,
+        totalOccupiedResult,
+        totalRooms,
+        pendingBookings,
+        icalSyncErrors
+    ] = await Promise.all([
         prisma.booking.count({
             where: {
                 checkinDate: { gte: today, lt: tomorrow },
-                status: 'confirmed'
+                status: 'confirmed',
             },
         }),
         prisma.booking.count({
             where: {
                 checkoutDate: { gte: today, lt: tomorrow },
-                status: 'confirmed'
+                status: 'confirmed',
             },
         }),
         prisma.booking.count({
@@ -30,49 +38,37 @@ const getDashboard = asyncHandler(async (req, res) => {
                 checkoutDate: { gt: today },
             },
         }),
-    ]);
-
-    // Monthly stats
-    const monthlyBookings = await prisma.booking.findMany({
-        where: {
-            status: { in: ['confirmed', 'completed'] },
-            checkinDate: { gte: monthStart, lte: monthEnd },
-        },
-        select: {
-            totalAmount: true
-        },
-    });
-
-    const monthRevenue = monthlyBookings.reduce(
-        (sum, b) => sum + Number(b.totalAmount),
-        0
-    );
-
-    const totalRooms = await prisma.room.count({ where: { status: 'active' } });
-    const daysInMonth = dayjs().daysInMonth();
-    const totalRoomNights = totalRooms * daysInMonth;
-
-    const occupiedNights = await prisma.booking.findMany({
-        where: {
-            status: { in: ['confirmed', 'completed'] },
-            checkinDate: { lte: monthEnd },
-            checkoutDate: { gte: monthStart },
-        },
-        select: { numNights: true },
-    });
-
-    const totalOccupied = occupiedNights.reduce((sum, b) => sum + b.numNights, 0);
-    const occupancyRate =
-        totalRoomNights > 0
-            ? Math.round((totalOccupied / totalRoomNights) * 1000) / 10
-            : 0;
-
-    const [pendingBookings, icalSyncErrors] = await Promise.all([
+        prisma.booking.aggregate({
+            where: {
+                status: { in: ['confirmed', 'completed'] },
+                checkinDate: { gte: monthStart, lte: monthEnd },
+            },
+            _sum: { totalAmount: true },
+            _count: { id: true },
+        }),
+        prisma.$queryRaw`
+            SELECT COALESCE(SUM(num_nights::int), 0)::int as total
+            FROM bookings
+            WHERE status IN ('confirmed', 'completed')
+              AND checkin_date <= ${monthEnd}
+              AND checkout_date >= ${monthStart}
+        `,
+        prisma.room.count({ where: { status: 'active' } }),
         prisma.booking.count({
             where: { status: 'pending', expiresAt: { gt: new Date() } },
         }),
         prisma.icalLink.count({ where: { syncStatus: 'error', isActive: true } }),
     ]);
+
+    const monthRevenue = Number(monthAgg._sum.totalAmount ?? 0);
+    const monthBookingCount = monthAgg._count.id;
+    const totalOccupied = Number(totalOccupiedResult?.[0]?.total ?? 0);
+    const daysInMonth = dayjs().daysInMonth();
+    const totalRoomNights = totalRooms * daysInMonth;
+    const occupancyRate =
+        totalRoomNights > 0
+            ? Math.round((totalOccupied / totalRoomNights) * 1000) / 10
+            : 0;
 
     res.json({
         success: true,
@@ -84,7 +80,7 @@ const getDashboard = asyncHandler(async (req, res) => {
             },
             month: {
                 revenue: monthRevenue,
-                totalBookings: monthlyBookings.length,
+                totalBookings: monthBookingCount,
                 occupancyRate,
             },
             pendingActions: {
