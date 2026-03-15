@@ -106,21 +106,21 @@ model BlockedDate {
 }
 
 model Payment {
-  id                 Int       @id @default(autoincrement())
-  bookingId          Int       @map("booking_id")
-  amount             Decimal   @db.Decimal(12, 0)
-  method             String    @db.VarChar(30)
-  vnpayTxnRef        String?   @map("vnpay_txn_ref") @db.VarChar(100)
-  vnpayTransactionNo String?   @map("vnpay_transaction_no") @db.VarChar(100)
-  vnpayResponseCode  String?   @map("vnpay_response_code") @db.VarChar(10)
-  vnpayBankCode      String?   @map("vnpay_bank_code") @db.VarChar(20)
-  vietqrTransactionId String?  @map("vietqr_transaction_id") @db.VarChar(100)
-  status             String    @default("pending") @db.VarChar(20)
-  paidAt             DateTime? @map("paid_at") @db.Timestamp
-  rawResponse        Json?     @map("raw_response") @db.JsonB
-  adminNote          String?   @map("admin_note") @db.Text
-  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamp
-  updatedAt          DateTime  @default(now()) @map("updated_at") @db.Timestamp
+  id                  Int       @id @default(autoincrement())
+  bookingId           Int       @map("booking_id")
+  amount              Decimal   @db.Decimal(12, 0)
+  method              String    @db.VarChar(30)
+  vnpayTxnRef         String?   @map("vnpay_txn_ref") @db.VarChar(100)
+  vnpayTransactionNo  String?   @map("vnpay_transaction_no") @db.VarChar(100)
+  vnpayResponseCode   String?   @map("vnpay_response_code") @db.VarChar(10)
+  vnpayBankCode       String?   @map("vnpay_bank_code") @db.VarChar(20)
+  vietqrTransactionId String?   @map("vietqr_transaction_id") @db.VarChar(100)
+  status              String    @default("pending") @db.VarChar(20)
+  paidAt              DateTime? @map("paid_at") @db.Timestamp
+  rawResponse         Json?     @map("raw_response") @db.JsonB
+  adminNote           String?   @map("admin_note") @db.Text
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamp
+  updatedAt           DateTime  @default(now()) @map("updated_at") @db.Timestamp
 
   booking Booking @relation(fields: [bookingId], references: [id])
 
@@ -164,7 +164,7 @@ model PricingRule {
   ruleType      String    @map("rule_type") @db.VarChar(30)
   dateFrom      DateTime? @map("date_from") @db.Date
   dateTo        DateTime? @map("date_to") @db.Date
-  dayOfWeek     Int[]?    @map("day_of_week")
+  dayOfWeek     Int[]     @map("day_of_week")
   priceModifier Decimal   @map("price_modifier") @db.Decimal(12, 0)
   modifierType  String    @default("fixed") @map("modifier_type") @db.VarChar(10)
   priority      Int       @default(0)
