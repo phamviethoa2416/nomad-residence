@@ -7,7 +7,7 @@ const cancelExpiredBookings = async () => {
         const result = await prisma.booking.updateMany({
             where: {
                 status: 'pending',
-                expiresAt: {lt: new Date()},
+                expiresAt: { lt: new Date() },
             },
             data: {
                 status: 'canceled',
@@ -24,12 +24,38 @@ const cancelExpiredBookings = async () => {
     }
 };
 
+const markCompletedBookings = async () => {
+    try {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const result = await prisma.booking.updateMany({
+            where: {
+                status: 'confirmed',
+                checkoutDate: { lt: startOfToday },
+            },
+            data: { status: 'completed' },
+        });
+
+        if (result.count > 0) {
+            logger.info('[CronJob] Đã chuyển đơn sang completed', { count: result.count });
+        }
+    } catch (err) {
+        logger.error('[CronJob] markCompletedBookings error', { err: err.message });
+    }
+};
+
+const runScheduledBookingJobs = async () => {
+    await cancelExpiredBookings();
+    await markCompletedBookings();
+};
+
 const startCancelExpiredJob = () => {
-    cron.schedule('* * * * *', cancelExpiredBookings, {
+    cron.schedule('* * * * *', runScheduledBookingJobs, {
         name: 'cancel-expired-bookings',
     });
 
-    logger.info('[CronJob] cancelExpiredBookings scheduled', { cronExpr: '* * * * *' });
+    logger.info('[CronJob] cancelExpiredBookings and markCompletedBookings scheduled', { cronExpr: '* * * * *' });
 };
 
 module.exports = {startCancelExpiredJob, cancelExpiredBookings};
