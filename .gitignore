@@ -38,5 +38,7 @@ build/
 *.iml
 out/
 
+prisma/migrations
+
 .DS_Store
 Thumbs.db
