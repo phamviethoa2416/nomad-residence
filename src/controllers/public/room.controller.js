@@ -18,6 +18,7 @@ const listRooms = asyncHandler(async (req, res) => {
         limit: data.limit
     });
 
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=30');
     res.json({
         success: true,
         data: result
@@ -38,6 +39,7 @@ const getRoomDetail = asyncHandler(async (req, res) => {
         throw new AppError('Không tìm thấy phòng', 404, 'ROOM_NOT_FOUND');
     }
 
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=30');
     res.json({
         success: true,
         data: room

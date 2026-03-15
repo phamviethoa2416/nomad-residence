@@ -301,7 +301,7 @@ const deleteRoomImage = async (imageId) => {
 };
 
 const reorderRoomImages = async (roomId, orderedIds) => {
-    await Promise.all(
+    await prisma.$transaction(
         orderedIds.map(({ id, sortOrder }) =>
             prisma.roomImage.update({ where: { id }, data: { sortOrder } })
         )

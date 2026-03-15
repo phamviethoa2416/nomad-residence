@@ -14,7 +14,7 @@ const getRedisClient = () => {
             });
             client.on('error', (err) => {
                 const { logger } = require('./logger');
-                logger.warn('[Cache] Redis error', { err: err.message });
+                logger.warn('[Cache] Redis error', { err });
             });
         } catch (err) {
             client = null;
@@ -73,14 +73,32 @@ const invalidateByPrefix = async (prefix) => {
     const redis = getRedisClient();
     if (redis) {
         try {
-            const keys = await redis.keys(`${prefix}*`);
-            if (keys.length > 0) await redis.del(...keys);
+            const stream = redis.scanStream({ match: `${prefix}*`, count: 100 });
+            const pipeline = redis.pipeline();
+            let count = 0;
+
+            await new Promise((resolve, reject) => {
+                stream.on('data', (keys) => {
+                    for (const key of keys) {
+                        pipeline.del(key);
+                        count++;
+                    }
+                });
+                stream.on('end', () => {
+                    if (count > 0) {
+                        pipeline.exec().then(resolve).catch(reject);
+                    } else {
+                        resolve();
+                    }
+                });
+                stream.on('error', reject);
+            });
             return;
         } catch {
 
         }
     }
-    for (const key of memoryStore.keys()) {
+    for (const key of [...memoryStore.keys()]) {
         if (key.startsWith(prefix)) memoryStore.delete(key);
     }
 };
