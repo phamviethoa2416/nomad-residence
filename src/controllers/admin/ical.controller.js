@@ -1,4 +1,4 @@
-const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
+const { asyncHandler } = require('../../middlewares/errorHandler');
 const icalService = require('../../services/ical.service');
 const { IcalRoomParamsSchema, IcalLinkParamsSchema, AddIcalLinkBodySchema } = require('../../validators/admin/ical.validators');
 
