@@ -3,7 +3,7 @@ const roomService = require('../../services/room.service');
 const { pickAndMap } = require('../../utils/objectHelper');
 const { AdminRoomParamsSchema, AdminImageParamsSchema, CreateRoomBodySchema, UpdateRoomBodySchema, AddRoomImageBodySchema, ReorderRoomImagesBodySchema, UpdateAmenitiesBodySchema } = require('../../validators/admin/room.validators');
 
-const UPDATE_ROOM_KEY_MAP = {
+const ROOM_KEY_MAP = {
     name: 'name',
     slug: 'slug',
     room_type: 'roomType',
@@ -57,33 +57,7 @@ const getRoom = asyncHandler(async (req, res) => {
 const createRoom = asyncHandler(async (req, res) => {
     const data = CreateRoomBodySchema.parse(req.body || {});
 
-    const room = await roomService.createRoom({
-        name: data.name,
-        slug: data.slug,
-        roomType: data.room_type,
-        description: data.description,
-        shortDescription: data.short_description,
-        maxGuests: data.max_guests,
-        numBedrooms: data.num_bedrooms,
-        numBathrooms: data.num_bathrooms,
-        numBeds: data.num_beds,
-        area: data.area,
-        address: data.address,
-        district: data.district,
-        city: data.city,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        basePrice: data.base_price,
-        cleaningFee: data.cleaning_fee,
-        checkinTime: data.checkin_time,
-        checkoutTime: data.checkout_time,
-        minNights: data.min_nights,
-        maxNights: data.max_nights,
-        houseRules: data.house_rules,
-        cancellationPolicy: data.cancellation_policy,
-        status: data.status,
-        sortOrder: data.sort_order,
-    });
+    const room = await roomService.createRoom(pickAndMap(data, ROOM_KEY_MAP));
     await roomService.invalidateRoomCache();
 
     res.status(201).json({
@@ -96,7 +70,7 @@ const updateRoom = asyncHandler(async (req, res) => {
     const params = AdminRoomParamsSchema.parse(req.params);
     const data = UpdateRoomBodySchema.parse(req.body || {});
 
-    const updateData = pickAndMap(data, UPDATE_ROOM_KEY_MAP);
+    const updateData = pickAndMap(data, ROOM_KEY_MAP);
 
     const existingRoom = await roomService.getRoomById(params.id);
     if (!existingRoom) {

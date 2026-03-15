@@ -1,6 +1,19 @@
-const { asyncHandler, AppError } = require('../../middlewares/errorHandler');
+const { asyncHandler } = require('../../middlewares/errorHandler');
 const pricingService = require('../../services/pricing.service');
+const { pickAndMap } = require('../../utils/objectHelper');
 const { PricingRoomParamsSchema, PricingRuleParamsSchema, CreatePricingRuleBodySchema, UpdatePricingRuleBodySchema } = require('../../validators/admin/pricing.validators');
+
+const PRICING_RULE_KEY_MAP = {
+    name: 'name',
+    rule_type: 'ruleType',
+    date_from: 'dateFrom',
+    date_to: 'dateTo',
+    day_of_week: 'dayOfWeek',
+    price_modifier: 'priceModifier',
+    modifier_type: 'modifierType',
+    priority: 'priority',
+    is_active: 'isActive',
+};
 
 const listRules = asyncHandler(async (req, res) => {
     const params = PricingRoomParamsSchema.parse(req.params);
@@ -37,17 +50,7 @@ const updateRule = asyncHandler(async (req, res) => {
     const params = PricingRuleParamsSchema.parse(req.params);
     const data = UpdatePricingRuleBodySchema.parse(req.body || {});
 
-    const updateData = {};
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.rule_type !== undefined) updateData.ruleType = data.rule_type;
-    if (data.date_from !== undefined) updateData.dateFrom = data.date_from;
-    if (data.date_to !== undefined) updateData.dateTo = data.date_to;
-    if (data.day_of_week !== undefined) updateData.dayOfWeek = data.day_of_week;
-    if (data.price_modifier !== undefined) updateData.priceModifier = data.price_modifier;
-    if (data.modifier_type !== undefined) updateData.modifierType = data.modifier_type;
-    if (data.priority !== undefined) updateData.priority = data.priority;
-    if (data.is_active !== undefined) updateData.isActive = data.is_active;
-
+    const updateData = pickAndMap(data, PRICING_RULE_KEY_MAP);
     const rule = await pricingService.updatePricingRule(params.ruleId, updateData);
     res.json({
         success: true,
